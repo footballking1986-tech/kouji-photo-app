@@ -72,6 +72,7 @@ const loadPhotoAngles = async () => {
   );
 
   setAngles(convertedAngles);
+  console.log("取得した撮影アングル:", convertedAngles);
 };
 
 // 工事を読み込んだときに撮影アングルを読み込む
