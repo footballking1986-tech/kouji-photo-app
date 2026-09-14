@@ -48,22 +48,42 @@ function App() {
   const [angles, setAngles] = useState([]);
 
 // Supabaseから撮影アングルを読み込む
+
 const loadPhotoAngles = async () => {
+
   if (!projectId) return;
 
-  const { data, error } = await supabase
-    .from("photo_angles")
-    .select("*");
+  let allData = [];
+  let from = 0;
+  const pageSize = 1000;
 
-  if (error) {
-    console.error(
-      "撮影アングルの読み込みエラー:",
-      error
-    );
-    return;
+  while (true) {
+
+    const { data, error } = await supabase
+      .from("photo_angles")
+      .select("*")
+      .range(from, from + pageSize - 1);
+
+    if (error) {
+
+      console.error(
+        "撮影アングルの読み込みエラー:",
+        error
+      );
+
+      return;
+    }
+
+    allData = [...allData, ...(data || [])];
+
+    if (!data || data.length < pageSize) {
+      break;
+    }
+
+    from += pageSize;
   }
 
-  const convertedAngles = (data || []).map(
+  const convertedAngles = allData.map(
     (item) => ({
       id: item.id,
       locationId: item.location_id,
@@ -72,7 +92,12 @@ const loadPhotoAngles = async () => {
   );
 
   setAngles(convertedAngles);
-  console.log("取得した撮影アングル:", convertedAngles);
+
+  console.log(
+    "取得した撮影アングル:",
+    convertedAngles
+  );
+
 };
 
 // 工事を読み込んだときに撮影アングルを読み込む
