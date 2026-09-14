@@ -91,12 +91,26 @@ const loadPhotoAngles = async () => {
     })
   );
 
-  setAngles(convertedAngles);
+ setAngles(convertedAngles);
 
-  console.log(
-    "取得した撮影アングル:",
-    convertedAngles
-  );
+console.log(
+  "取得した撮影アングル:",
+  convertedAngles
+);
+
+console.log(
+  "選択中の撮影場所:",
+  selectedLocation
+);
+
+console.log(
+  "選択中の場所に一致するアングル:",
+  convertedAngles.filter(
+    (angle) =>
+      selectedLocation &&
+      angle.locationId === selectedLocation.id
+  )
+);
 
 };
 
