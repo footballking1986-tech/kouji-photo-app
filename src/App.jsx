@@ -1057,15 +1057,19 @@ const fileName =
         );
 
       if (uploadError) {
-        console.error(uploadError);
+  console.error(
+    "写真のアップロードエラー:",
+    uploadError
+  );
 
-        alert(
-          "写真のアップロードに失敗しました。"
-        );
+  alert(
+    "写真のアップロードに失敗しました。\n\n" +
+    uploadError.message
+  );
 
-        setMessage("");
-        return;
-      }
+  setMessage("");
+  return;
+}
 
      // 写真URLを取得
 const {
