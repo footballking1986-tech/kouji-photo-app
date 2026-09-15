@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
+import JSZip from "jszip";
 import { supabase } from "./supabaseClient";
 import "./App.css";
+
 
 function App() {
   const [session, setSession] = useState(null);
@@ -1188,6 +1190,77 @@ const photoUrl =
     event.target.value = "";
   };
 
+  const downloadPhotosAsZip = async () => {
+  try {
+    setMessage("写真をZIPにまとめています...");
+
+    const zip = new JSZip();
+
+    for (const photo of photos) {
+      const { data, error } = await supabase.storage
+        .from("construction-photos")
+        .download(photo.filePath);
+
+      if (error) {
+        console.error(
+          "写真のダウンロードエラー:",
+          error
+        );
+        continue;
+      }
+
+      const location = locations.find(
+        (item) => item.id === photo.locationId
+      );
+
+      const angle = angles.find(
+        (item) => item.id === photo.angleId
+      );
+
+      const photoNumber = String(
+        photo.photoNumber || 1
+      ).padStart(3, "0");
+
+      const fileName =
+        `${location?.floor || "階数不明"}_` +
+        `${location?.roomName || "部屋名不明"}_` +
+        `${angle?.angleName || "アングル不明"}_` +
+        `${photoNumber}.jpg`;
+
+      zip.file(fileName, data);
+    }
+
+    const zipBlob = await zip.generateAsync({
+      type: "blob",
+    });
+
+    const url = URL.createObjectURL(zipBlob);
+
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "工事写真_バックアップ.zip";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+
+    setMessage(
+      "写真のZIPファイルを作成しました。"
+    );
+  } catch (error) {
+    console.error(error);
+
+    alert(
+      "写真のZIP作成中にエラーが発生しました。\n\n" +
+      error.message
+    );
+
+    setMessage("");
+  }
+};
 
   // 撮影場所ごとの写真枚数
   const getPhotoCount = (locationId) => {
@@ -1712,6 +1785,20 @@ const deletePhoto = async (photoId) => {
 <section className="card">
 
   <h2>📁 撮影場所の写真</h2>
+
+ <button
+    onClick={downloadPhotosAsZip}
+    style={{
+      width: "100%",
+      marginBottom: "20px",
+      padding: "15px",
+      fontSize: "16px",
+      fontWeight: "bold",
+    }}
+  >
+    📦 写真を一括ダウンロード
+  </button>
+
 
   {!selectedLocation ? (
 
