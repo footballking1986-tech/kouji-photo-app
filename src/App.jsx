@@ -1018,26 +1018,16 @@ if (existing) {
       const compressedBlob =
         await compressImage(file);
 
-// 同じ撮影場所・同じアングルの写真枚数を確認
-const sameAnglePhotos = photos.filter(
-  (photo) =>
-    photo.locationId === selectedLocation.id &&
-    photo.angleId === selectedAngle.id
-);
-
-// 写真通番
-const photoNumber = String(
-  sameAnglePhotos.length + 1
-).padStart(3, "0");
-
-// ファイル名
+// ファイル名を作成
 const fileName =
-  `${selectedLocation.floor || "階数不明"}_` +
-  `${selectedLocation.roomName || "部屋名不明"}_` +
-  `${selectedAngle.angleName || "アングル不明"}_` +
-  `${photoNumber}.jpg`;
-
-
+  `${
+    crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(2, 10)}`
+  }.jpg`;
+  
       // Storage上の保存場所
       const filePath =
         `${projectId}/${selectedLocation.id}/${selectedAngle.id}/${fileName}`;
