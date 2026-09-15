@@ -190,13 +190,15 @@ const convertedPhotos = await Promise.all(
       photoUrl
     );
 
-    return {
-      id: item.id,
-      url: photoUrl,
-      locationId: item.location_id,
-      angleId: item.angle_id,
-      filePath: item.file_path,
-    };
+   return {
+  id: item.id,
+  url: photoUrl,
+  locationId: item.location_id,
+  angleId: item.angle_id,
+  filePath: item.file_path,
+  photoNumber: item.photo_number,
+};
+
   })
 );
 
@@ -1018,6 +1020,33 @@ if (existing) {
       const compressedBlob =
         await compressImage(file);
 
+        // 写真番号を取得
+const {
+  data: photoNumber,
+  error: numberError,
+} = await supabase.rpc(
+  "get_next_photo_number",
+  {
+    p_location_id: selectedLocation.id,
+    p_angle_id: selectedAngle.id,
+  }
+);
+
+if (numberError) {
+  console.error(
+    "写真番号の取得エラー:",
+    numberError
+  );
+
+  alert(
+    "写真番号の取得に失敗しました。\n\n" +
+    numberError.message
+  );
+
+  setMessage("");
+  return;
+}
+
 // ファイル名を作成
 const fileName =
   `${
@@ -1027,7 +1056,7 @@ const fileName =
           .toString(36)
           .substring(2, 10)}`
   }.jpg`;
-  
+
       // Storage上の保存場所
       const filePath =
         `${projectId}/${selectedLocation.id}/${selectedAngle.id}/${fileName}`;
@@ -1102,6 +1131,7 @@ const photoUrl =
           angle_id:
             selectedAngle.id,
           file_path: filePath,
+          photo_number: photoNumber,
         })
         .select()
         .single();
@@ -1132,6 +1162,8 @@ const photoUrl =
           selectedAngle,
         filePath:
           filePath,
+          photoNumber:
+  savedPhoto.photo_number,
       };
 
       setPhotos((prev) => [
